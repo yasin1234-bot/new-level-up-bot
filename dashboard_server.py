@@ -316,13 +316,21 @@ bot_state = BotState()
 # ============================================================
 # HELPER: Purge account from all storage files
 # ============================================================
-def _purge_account_from_files(uid: str, token: Optional[str] = None):
+def _purge_account_from_files(uid: str, token: Optional[str] = None, auth_uid: Optional[str] = None):
     """Remove ONLY the given account from accounts.json, token_cache.json, devices.json.
-    Other accounts are untouched."""
+    Other accounts are untouched.
+
+    uid       : account_id (the one shown in dashboard, e.g. 18518313511)
+    token     : access_token / auth_token if known
+    auth_uid  : guest UID (the one stored inside accounts.json / devices.json / token_cache keys,
+                e.g. 8059484992). This is what makes the difference — files are keyed by guest UID.
+    """
 
     uid_str = str(uid).strip()
     if not uid_str:
         return
+
+    guest_uid = str(auth_uid).strip() if auth_uid else None
 
     # --- accounts.json (list) ---
     try:
@@ -332,9 +340,10 @@ def _purge_account_from_files(uid: str, token: Optional[str] = None):
             if isinstance(existing, list):
                 new_list = []
                 for acc in existing:
-                    if str(acc.get("uid", "")).strip() == uid_str:
-                        continue  # remove this one
-                    # Also remove if token matches (defensive)
+                    a_uid = str(acc.get("uid", "")).strip()
+                    # Remove if matches account_id OR guest_uid OR token
+                    if a_uid and (a_uid == uid_str or (guest_uid and a_uid == guest_uid)):
+                        continue
                     if token and acc.get("token") == token:
                         continue
                     new_list.append(acc)
@@ -350,37 +359,119 @@ def _purge_account_from_files(uid: str, token: Optional[str] = None):
                 content = f.read().strip()
             cache = json.loads(content) if content else {}
             if isinstance(cache, dict):
-                # Direct uid key
+                # Direct key removal (account_id, guest uid, token-prefix)
                 cache.pop(uid_str, None)
-                # token-prefixed key
+                if guest_uid:
+                    cache.pop(guest_uid, None)
                 if token:
                     cache.pop(f"tok_{token[:20]}", None)
-                # Scan entries by account_id / access_token
+
+                # Deep scan — remove entries whose account_id / auth_uid / token matches
                 to_delete = []
                 for k, v in cache.items():
-                    if isinstance(v, dict):
-                        if str(v.get("account_id", "")) == uid_str:
+                    if not isinstance(v, dict):
+                        continue
+                    if str(v.get("account_id", "")) == uid_str:
+                        to_delete.append(k)
+                        continue
+                    if guest_uid and str(v.get("auth_uid", "")) == guest_uid:
+                        to_delete.append(k)
+                        continue
+                    if token:
+                        if v.get("access_token") == token or v.get("auth_token") == token:
                             to_delete.append(k)
-                        elif token and v.get("access_token") == token:
-                            to_delete.append(k)
+                            continue
                 for k in to_delete:
                     cache.pop(k, None)
+
                 with open(TOKEN_CACHE_FILE, "w", encoding="utf-8") as f:
                     json.dump(cache, f, indent=2)
     except Exception as e:
         bot_state.log(f"token_cache.json purge error: {e}", "error", uid_str)
 
-    # --- devices.json (dict keyed by uid) ---
+    # --- devices.json (dict keyed by guest UID) ---
     try:
         if os.path.exists(DEVICES_FILE):
             with open(DEVICES_FILE, "r", encoding="utf-8") as f:
                 devices = json.load(f)
             if isinstance(devices, dict):
                 devices.pop(uid_str, None)
+                if guest_uid:
+                    devices.pop(guest_uid, None)
                 with open(DEVICES_FILE, "w", encoding="utf-8") as f:
                     json.dump(devices, f, indent=4)
     except Exception as e:
         bot_state.log(f"devices.json purge error: {e}", "error", uid_str)
+
+
+# ============================================================
+# HELPER: Resolve guest UID + token from account_id
+# ============================================================
+def _resolve_account_identity(account_id: str) -> tuple:
+    """Given account_id (as shown in dashboard), return (guest_uid, token).
+    Looks in in-memory credentials first, then token_cache.json scan.
+    Returns (None, None) if not found.
+    """
+    account_id = str(account_id).strip()
+    if not account_id:
+        return None, None
+
+    guest_uid = None
+    token_for_uid = None
+
+    # 1. In-memory credentials
+    try:
+        for k, v in list(bot_state.account_credentials.items()):
+            if not isinstance(v, dict):
+                continue
+            if str(v.get("account_id", "")) == account_id:
+                guest_uid = v.get("auth_uid") or guest_uid
+                token_for_uid = (
+                    v.get("auth_token") or v.get("access_token") or token_for_uid
+                )
+                if guest_uid and token_for_uid:
+                    break
+    except Exception:
+        pass
+
+    # 2. Scan token_cache.json by account_id
+    if not guest_uid or not token_for_uid:
+        try:
+            if os.path.exists(TOKEN_CACHE_FILE):
+                with open(TOKEN_CACHE_FILE, "r", encoding="utf-8") as f:
+                    content = f.read().strip()
+                cache = json.loads(content) if content else {}
+                if isinstance(cache, dict):
+                    for k, v in cache.items():
+                        if not isinstance(v, dict):
+                            continue
+                        if str(v.get("account_id", "")) == account_id:
+                            guest_uid = guest_uid or v.get("auth_uid") or k
+                            token_for_uid = (
+                                token_for_uid
+                                or v.get("access_token")
+                                or v.get("auth_token")
+                            )
+                            break
+        except Exception:
+            pass
+
+    # 3. Scan accounts.json — if an entry's uid matches the account_id directly
+    #    (rare) or has no uid but a token we can link via credentials
+    try:
+        if os.path.exists(ACCOUNTS_FILE):
+            with open(ACCOUNTS_FILE, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+            if isinstance(existing, list):
+                for acc in existing:
+                    a_uid = str(acc.get("uid", "")).strip()
+                    if a_uid == account_id:
+                        guest_uid = guest_uid or a_uid
+                        token_for_uid = token_for_uid or acc.get("token")
+    except Exception:
+        pass
+
+    return guest_uid, token_for_uid
 
 
 # ============================================================
@@ -498,25 +589,20 @@ async def handle_delete_account(request: web.Request) -> web.Response:
         if not uid:
             return web.json_response({"status": "error", "error": "UID required"})
 
-        # Find token for this uid in accounts.json (before purge)
-        token_for_uid = None
-        if os.path.exists(ACCOUNTS_FILE):
-            try:
-                with open(ACCOUNTS_FILE, "r", encoding="utf-8") as f:
-                    for acc in json.load(f):
-                        if str(acc.get("uid", "")) == uid:
-                            token_for_uid = acc.get("token")
-            except Exception:
-                pass
+        # ---------- RESOLVE guest_uid + token for this account_id ----------
+        # Files (accounts.json / devices.json / token_cache.json) are keyed by the
+        # guest UID (e.g. 8059484992), but the dashboard sends account_id
+        # (e.g. 18518313511). So we must translate before purging.
+        guest_uid, token_for_uid = _resolve_account_identity(uid)
 
-        # Also check account_credentials for token
-        if not token_for_uid:
-            creds = bot_state.account_credentials.get(uid)
-            if creds:
-                token_for_uid = creds.get("access_token") or creds.get("auth_token")
+        bot_state.log(
+            f"🗑️ Purging account_id={uid} "
+            f"(guest_uid={guest_uid or '—'}, token={'yes' if token_for_uid else 'no'})",
+            "info", uid
+        )
 
         # ---------- PURGE FROM ALL FILES ----------
-        _purge_account_from_files(uid, token_for_uid)
+        _purge_account_from_files(uid, token_for_uid, guest_uid)
 
         # ---------- PURGE FROM MEMORY ----------
         if uid in bot_state.accounts:
@@ -525,12 +611,26 @@ async def handle_delete_account(request: web.Request) -> web.Response:
         bot_state.target_reached.pop(uid, None)
         bot_state.dequeue(uid)
 
-        # Remove credentials
+        # Remove credentials (by account_id, guest_uid and token-prefix keys)
+        keys_to_remove = set()
         for k in list(bot_state.account_credentials.keys()):
             v = bot_state.account_credentials[k]
-            if isinstance(v, dict) and str(v.get("account_id", "")) == uid:
-                del bot_state.account_credentials[k]
-        bot_state.account_credentials.pop(uid, None)
+            if isinstance(v, dict):
+                if str(v.get("account_id", "")) == uid:
+                    keys_to_remove.add(k)
+                elif guest_uid and str(v.get("auth_uid", "")) == guest_uid:
+                    keys_to_remove.add(k)
+                elif token_for_uid and (
+                    v.get("auth_token") == token_for_uid or v.get("access_token") == token_for_uid
+                ):
+                    keys_to_remove.add(k)
+        keys_to_remove.add(uid)
+        if guest_uid:
+            keys_to_remove.add(guest_uid)
+        if token_for_uid:
+            keys_to_remove.add(f"tok_{token_for_uid[:20]}")
+        for k in keys_to_remove:
+            bot_state.account_credentials.pop(k, None)
 
         # If this was the active account, clear it and start next
         if bot_state.active_account == uid:
