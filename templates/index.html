@@ -158,8 +158,8 @@
             padding: 18px;
             box-shadow: 0 0 0 1px rgba(34,197,94,0.1), 0 8px 28px rgba(34,197,94,0.08);
         }
-        .active-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-        .active-profile { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .active-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; gap: 8px; }
+        .active-profile { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
         .active-avatar {
             width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
             background: linear-gradient(135deg, #1e293b, #334155);
@@ -170,9 +170,11 @@
         .active-info h4 {
             font-size: 15px; font-weight: 800; color: #fff;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;
         }
-        .active-info span { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+        .active-info span { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; display: block; margin-top: 2px; }
+        .region { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: rgba(168,85,247,.15); color: #c084fc; flex-shrink: 0; }
+        
         .live-badge {
             display: inline-flex; align-items: center; gap: 5px;
             background: rgba(34,197,94,.15);
@@ -180,6 +182,11 @@
             padding: 4px 10px; border-radius: 20px;
             font-size: 10px; font-weight: 800; letter-spacing: 1px;
             border: 1px solid rgba(34,197,94,.4);
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 6px;
+            margin-right: 0px;
+            align-self: flex-start;
         }
         .live-badge .ldot {
             width: 6px; height: 6px; border-radius: 50%;
@@ -224,8 +231,8 @@
         .acc-card.queued { border-color: rgba(168, 85, 247, 0.35); }
         .acc-card.idle { border-color: rgba(120, 160, 255, 0.15); opacity: 0.9; }
 
-        .acc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .acc-profile { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .acc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+        .acc-profile { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
         .acc-avatar {
             width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
             background: linear-gradient(135deg, #1e293b, #334155);
@@ -233,16 +240,15 @@
             color: #7dd3fc; font-size: 14px;
             border: 1px solid rgba(56,189,248,0.2);
         }
-        .acc-info { min-width: 0; }
+        .acc-info { min-width: 0; flex: 1; }
         .acc-info h4 {
             font-size: 13px; font-weight: 700; color: #fff;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;
         }
-        .region { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: rgba(168,85,247,.15); color: #c084fc; }
-        .acc-info span { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+        .acc-info span { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; display: block; margin-top: 2px; }
 
-        .acc-status { font-size: 9px; font-weight: 800; letter-spacing: 0.8px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+        .acc-status { font-size: 9px; font-weight: 800; letter-spacing: 0.8px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-top: 6px; margin-right: 0px; align-self: flex-start; }
         .st-online { background: rgba(34,197,94,.12); color: #4ade80; border: 1px solid rgba(34,197,94,.3); }
         .st-active { background: rgba(56,189,248,.15); color: #38bdf8; border: 1px solid rgba(56,189,248,.4); }
         .st-paused { background: rgba(245,158,11,.15); color: #fbbf24; border: 1px solid rgba(245,158,11,.4); }
@@ -268,6 +274,14 @@
         .icon-btn.pause { background: rgba(245,158,11,.15); color: #fbbf24; border-color: rgba(245,158,11,.35); }
         .icon-btn.refresh:hover { color: #38bdf8; border-color: rgba(56,189,248,.4); }
         .icon-btn.danger:hover { color: #ef4444; border-color: rgba(239,68,68,.4); }
+        
+        .icon-btn.rotating i {
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         /* LOGS */
         .log-box {
@@ -763,7 +777,6 @@
             });
             const d = await r.json();
             if (d.status === 'ok') {
-                // refresh immediately
                 fetchStats();
             } else {
                 alert('❌ ' + (d.error || 'Delete failed'));
@@ -771,12 +784,21 @@
         } catch (e) { alert('Delete failed: ' + e); }
     }
 
-    async function refreshAcc(uid) {
+    async function refreshAcc(uid, btnEl) {
+        if (btnEl) {
+            const icon = btnEl.querySelector('i');
+            if (icon) {
+                icon.classList.add('fa-spin');
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                }, 600);
+            }
+        }
         await fetch('/api/account/refresh', {
             method: 'POST', headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ uid })
         });
-        fetchStats();
+        await fetchStats();
     }
 
     async function togglePause(uid, paused) {
@@ -916,9 +938,9 @@
             </div>
 
             <div class="exp-row">
-                <div class="exp-item"><span class="k">Initial</span><span class="v">${fmt(a.initial_exp)}</span></div>
-                <div class="exp-item"><span class="k">Current</span><span class="v">${fmt(a.current_exp)}</span></div>
-                <div class="exp-item"><span class="k">Gained</span><span class="v g">+${fmt(a.gained_exp)}</span></div>
+                <div class="exp-item"><span class="k">OLD EXP</span><span class="v">${fmt(a.initial_exp)}</span></div>
+                <div class="exp-item"><span class="k">TOTAL EXP</span><span class="v">${fmt(a.current_exp)}</span></div>
+                <div class="exp-item"><span class="k">NEW EXP</span><span class="v g">+${fmt(a.gained_exp)}</span></div>
             </div>
 
             <div class="prog-wrap">
@@ -933,7 +955,7 @@
                 <span class="last-match">${a.last_match_time ? 'Last: ' + a.last_match_time : 'Running...'}</span>
                 <div class="btns">
                     <button class="icon-btn pause" title="Pause" onclick="togglePause('${a.uid}', false)"><i class="fa-solid fa-pause"></i></button>
-                    <button class="icon-btn refresh" title="Refresh" onclick="refreshAcc('${a.uid}')"><i class="fa-solid fa-rotate"></i></button>
+                    <button class="icon-btn refresh" title="Refresh" onclick="refreshAcc('${a.uid}', this)"><i class="fa-solid fa-rotate"></i></button>
                     <button class="icon-btn danger" title="Delete" onclick="deleteAcc('${a.uid}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
@@ -999,9 +1021,9 @@
             </div>
 
             <div class="exp-row">
-                <div class="exp-item"><span class="k">Initial</span><span class="v">${fmt(a.initial_exp)}</span></div>
-                <div class="exp-item"><span class="k">Current</span><span class="v">${fmt(a.current_exp)}</span></div>
-                <div class="exp-item"><span class="k">Gained</span><span class="v g">+${fmt(a.gained_exp)}</span></div>
+                <div class="exp-item"><span class="k">OLD EXP</span><span class="v">${fmt(a.initial_exp)}</span></div>
+                <div class="exp-item"><span class="k">TOTAL EXP</span><span class="v">${fmt(a.current_exp)}</span></div>
+                <div class="exp-item"><span class="k">NEW EXP</span><span class="v g">+${fmt(a.gained_exp)}</span></div>
             </div>
 
             <div class="prog-wrap">
@@ -1017,7 +1039,7 @@
                 <div class="btns">
                     ${pauseBtn}
                     ${queueBtn}
-                    <button class="icon-btn refresh" title="Refresh" onclick="refreshAcc('${a.uid}')"><i class="fa-solid fa-rotate"></i></button>
+                    <button class="icon-btn refresh" title="Refresh" onclick="refreshAcc('${a.uid}', this)"><i class="fa-solid fa-rotate"></i></button>
                     <button class="icon-btn danger" title="Delete" onclick="deleteAcc('${a.uid}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </div>
