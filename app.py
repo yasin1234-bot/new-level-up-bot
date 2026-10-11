@@ -1352,8 +1352,10 @@ async def play_game(server_ip_port, thunder, sharma, udp_key, match_code,
         if completed_cleanly:
             try:
                 bot_state.increment_match(uid_str)
-            except Exception:
-                pass
+                # === সলিউশন: ম্যাচ শেষ হওয়া মাত্রই EXP আপডেট ===
+                asyncio.create_task(refresh_account_profile(uid_str))
+            except Exception as e:
+                print_error(f"Post-match EXP update error: {e}")
         ping_stop.set()
         if ping_task:
             ping_task.cancel()
@@ -2119,9 +2121,10 @@ async def run_account_worker(account_data: Dict, label: str):
             )
         )
 
+        # ========== পরিবর্তন: ১৫ সেকেন্ডের জায়গায় ৫ সেকেন্ড ==========
         async def exp_refresher():
             while True:
-                await asyncio.sleep(15)
+                await asyncio.sleep(5)
                 fresh = bot_state.account_credentials.get(acc_id)
                 if fresh:
                     await refresh_account_profile(fresh)
@@ -2268,6 +2271,7 @@ async def main():
     print_info("✅ BAN-SAFE LOGIN: ENABLED")
     print_info("✅ FAST MODE: 2X SPEED ⚡")
     print_info("🔁 QUEUE SYSTEM: Only 1 account runs at a time (Lv8 → next)")
+    print_info("⚡ EXP REFRESH: 5s interval + instant post-match update")
     print_colored("=" * 60, Colors.CYAN)
 
     try:
