@@ -1,0 +1,15 @@
+{
+  "max_stack_lw": 15,
+  "max_stack_br": 1,
+  "start_match_interval": 3.0,
+  "new_match_delay": 3.0,
+  "match_idle_timeout": 15.0,
+  "lw_match_idle_timeout": 8.0,
+  "exp_refresh_interval": 25.0,
+  "token_cache_ttl": 1200,
+  "identity_rotate_every_matches": 5,
+  "identity_rotate_every_seconds": 900,
+  "cancel_br_on_lw_unlock": true,
+  "safe_play_mode": true,
+  "human_like_movement": true
+}
