@@ -1,1 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Yasin Bhai | Level Up Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --panel: #111111;
+  --panel-2: #171717;
+  --inset: #0f0f0f;
+  --line: #262626;
+  --text: #fafafa;
+  --muted: #a1a1aa;
+  --green: #22c55e;
+  --gold: #eab308;
+  --rose: #f43f5e;
+  --blue: #3b82f6;
+  --violet: #a78bfa;
+  --font: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --tab-h: 64px;
+  --shadow: 0 2px 8px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --shadow-lg: 0 8px 28px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.35);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: calc(var(--tab-h) + 20px + env(safe-area-inset-bottom));
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus, :focus-visible { outline: none !important; box-shadow: none; }
+* { -webkit-tap-highlight-color: transparent; }
+body {
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+}
+input, textarea, select {
+  -webkit-user-select: text; user-select: text;
+}
 
+.wrap { max-width: 1100px; margin: 0 auto; padding: 18px 16px 24px; }
+.page { display: none; }
+.page.active { display: block; animation: pageIn .22s ease; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Header */
+.top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: #fafafa; color: #0a0a0a;
+  display: grid; place-items: center;
+  box-shadow: var(--shadow);
+}
+.brand h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+.brand p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.live {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--green); font-size: 11px; font-weight: 600;
+}
+.live i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; animation: pulse 1.6s infinite;
+}
+@keyframes pulse { 50% { opacity: .35; } }
+
+.ghost-btn {
+  height: 36px; padding: 0 14px; border-radius: 10px;
+  border: none; cursor: pointer; font-size: 13px; font-weight: 500;
+  background: var(--panel-2); color: var(--text);
+  box-shadow: var(--shadow);
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: filter .15s, transform .12s;
+}
+.ghost-btn:hover { filter: brightness(1.12); }
+.ghost-btn:active { transform: translateY(1px); }
+
+/* Stats */
+.stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  margin-bottom: 18px;
+}
+.stat {
+  background: var(--panel); border-radius: 14px; padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.stat label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.stat b { font-family: var(--mono); font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+.stat b.pos { color: var(--green); }
+
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.panel-head h2 { font-size: 14px; font-weight: 600; }
+.seg {
+  display: inline-flex; background: var(--inset); border-radius: 10px;
+  padding: 3px; box-shadow: inset 0 1px 2px rgba(0,0,0,.4);
+}
+.seg button {
+  border: 0; background: transparent; color: var(--muted);
+  font-size: 12px; font-weight: 600; padding: 6px 12px;
+  border-radius: 8px; cursor: pointer; transition: .15s;
+}
+.seg button.active {
+  background: var(--panel-2); color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+
+/* Accounts */
+.accounts { display: flex; flex-direction: column; gap: 12px; }
+.accounts.compact { gap: 8px; }
+
+.acct {
+  background: var(--panel); border-radius: 16px;
+  padding: 16px; box-shadow: var(--shadow);
+  transition: box-shadow .2s, transform .2s, background .2s;
+  will-change: transform;
+}
+.acct:hover { box-shadow: var(--shadow-lg); background: #131313; }
+.acct.dragging {
+  opacity: .95; z-index: 30;
+  box-shadow: 0 16px 48px rgba(0,0,0,.7);
+  transform: scale(1.015);
+}
+
+.acct { position: relative; }
+.drag-handle {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  cursor: grab; color: #52525b;
+  width: 28px; height: 28px; display: grid; place-items: center;
+  border-radius: 8px; touch-action: none; user-select: none;
+  transition: color .15s, background .15s;
+}
+.drag-handle:hover { color: #a1a1aa; background: rgba(255,255,255,.06); }
+.acct.dragging .drag-handle { cursor: grabbing; color: #fafafa; }
+
+.acct-body { min-width: 0; padding-right: 4px; }
+
+.profile-wrap {
+  position: relative; width: 100%; max-width: 280px;
+  aspect-ratio: 280 / 60; border-radius: 0; overflow: hidden;
+  background: #0c0c0c; margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+.profile-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.profile-ph {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: #3f3f46; font-size: 16px;
+  background: linear-gradient(135deg, #141414, #0a0a0a);
+}
+/* Soft diagonal shimmer: starts far off top-left, exits far past bottom-right, 2s pause */
+.acct.is-running .profile-wrap::after {
+  content: ""; position: absolute; inset: -40%; pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 42%,
+    rgba(255,255,255,.0) 46%,
+    rgba(255,255,255,.18) 50%,
+    rgba(255,255,255,.0) 54%,
+    transparent 58%,
+    transparent 100%
+  );
+  background-size: 100% 100%;
+  animation: imgShimmer 4.5s ease-in-out infinite;
+}
+@keyframes imgShimmer {
+  0%   { transform: translate(-55%, -55%); opacity: 0; }
+  8%   { opacity: 1; }
+  55%  { transform: translate(55%, 55%); opacity: 1; }
+  62%  { opacity: 0; }
+  100% { transform: translate(55%, 55%); opacity: 0; }
+}
+
+.meta-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;
+}
+.name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.uid { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+/* Material pills — soft fill, no border */
+.mpill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; padding: 3px 10px;
+  border-radius: 999px; border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.mpill .dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: currentColor; flex: none;
+}
+.mpill.region { background: rgba(228,228,231,.12); color: #e4e4e7; }
+.mpill.target { background: rgba(234,179,8,.16); color: #fbbf24; }
+.mpill.runtime { background: rgba(59,130,246,.14); color: #93c5fd; font-family: var(--mono); }
+.mpill.runtime i { font-size: 10px; opacity: .9; }
+.mpill.status.online { background: rgba(34,197,94,.16); color: #4ade80; }
+.mpill.status.match { background: rgba(59,130,246,.18); color: #60a5fa; }
+.mpill.status.match .dot { animation: pulse 1s infinite; }
+.mpill.status.busy { background: rgba(234,179,8,.16); color: #fbbf24; }
+.mpill.status.paused { background: rgba(167,139,250,.18); color: #c4b5fd; }
+.mpill.status.stopped { background: rgba(113,113,122,.2); color: #a1a1aa; }
+.mpill.status.bad { background: rgba(244,63,94,.18); color: #fb7185; }
+
+.status-line {
+  margin-top: 2px; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+
+/* Level / progress */
+.level-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-top: 12px; margin-bottom: 8px;
+}
+.level-name { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.level-name small { font-size: 13px; font-weight: 500; color: var(--muted); margin-right: 6px; }
+.level-pct { font-family: var(--mono); font-size: 18px; font-weight: 600; color: #fafafa; }
+.level-pct small { font-size: 12px; color: var(--muted); }
+
+.bar {
+  height: 6px; border-radius: 99px; background: #2a2a2a;
+  overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,.35);
+}
+.fill {
+  height: 100%; width: 0; border-radius: 99px;
+  background: #fafafa;
+  transition: width 1.1s cubic-bezier(.22,1,.36,1);
+  box-shadow: 0 0 10px rgba(255,255,255,.12);
+}
+.fill.no-anim { transition: none; }
+.acct:not(.is-running) .fill {
+  background: #52525b;
+  box-shadow: none;
+}
+
+.bar-scale {
+  display: flex; justify-content: space-between;
+  margin-top: 6px; font-size: 12px; color: var(--muted);
+}
+.bar-scale b { font-family: var(--mono); font-weight: 500; color: var(--text); }
+
+.tiles {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin: 14px 0 12px;
+}
+.tile {
+  background: var(--inset); border-radius: 12px; padding: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.03);
+  transition: transform .15s, box-shadow .15s;
+}
+.tile:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.35); }
+.tile span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.tile b {
+  display: block; font-family: var(--mono); font-size: 16px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tile b.soft { font-size: 13px; color: var(--muted); font-weight: 500; }
+.tile small { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.tile.eta b { color: var(--gold); }
+
+.facts {
+  display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.facts div { display: flex; flex-direction: column; }
+.facts dt { font-size: 11px; color: var(--muted); }
+.facts dd { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+.facts dd.gain { color: var(--green); }
+
+/* Button groups */
+.btn-row {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  justify-content: flex-end;
+  padding-top: 12px; border-top: 1px solid rgba(255,255,255,.05);
+}
+.btn-group { display: flex; gap: 6px; align-items: center; }
+.btn-group + .btn-group::before {
+  content: "|";
+  color: rgba(255,255,255,.2);
+  font-size: 12px; font-weight: 400;
+  margin-right: 8px;
+  line-height: 30px;
+}
+.btn-group + .btn-group {
+  margin-left: 2px;
+}
+
+.mbtn {
+  width: 30px; height: 30px; border-radius: 9px; border: none; cursor: pointer;
+  display: grid; place-items: center; font-size: 12px; color: #e4e4e7;
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 2px 8px rgba(255,255,255,.06), 0 1px 2px rgba(0,0,0,.35);
+  transition: transform .1s, background .12s, box-shadow .12s, color .12s;
+  -webkit-user-select: none; user-select: none;
+  outline: none !important;
+}
+.mbtn i { transition: transform .2s; pointer-events: none; }
+.mbtn:hover {
+  background: rgba(255,255,255,.12);
+  box-shadow: 0 4px 14px rgba(255,255,255,.1), 0 2px 4px rgba(0,0,0,.4);
+  color: #fafafa;
+}
+.mbtn:active, .mbtn.is-pressed {
+  transform: scale(.94);
+  background: rgba(255,255,255,.08);
+  box-shadow: 0 1px 3px rgba(255,255,255,.04);
+}
+/* Icon micro-motion only during press, not sticky hover */
+.mbtn:active i.fa-gear, .mbtn.is-pressed i.fa-gear { transform: rotate(45deg); }
+.mbtn.spin i, .mbtn:active i.fa-rotate { animation: spin .7s linear infinite; }
+.mbtn:active i.fa-arrow-rotate-right, .mbtn.is-pressed i.fa-arrow-rotate-right { transform: rotate(80deg); }
+.mbtn:active i.fa-pause { transform: scale(.9); }
+.mbtn:active i.fa-play { transform: translateX(1px); }
+.mbtn:active i.fa-stop { transform: scale(.85); }
+.mbtn:active i.fa-bolt { transform: scale(1.08); }
+.mbtn:active i.fa-trash { transform: translateY(1px); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.mbtn.warn {
+  background: rgba(234,179,8,.16);
+  color: #fbbf24;
+  box-shadow: 0 2px 8px rgba(234,179,8,.12), 0 1px 2px rgba(0,0,0,.3);
+}
+.mbtn.warn:hover {
+  background: rgba(234,179,8,.28);
+  color: #fde68a;
+  box-shadow: 0 4px 14px rgba(234,179,8,.2);
+}
+
+.mbtn.danger {
+  background: rgba(244,63,94,.22);
+  color: #fda4af;
+  box-shadow: 0 2px 8px rgba(244,63,94,.18), 0 1px 2px rgba(0,0,0,.3);
+}
+.mbtn.danger:hover {
+  background: rgba(244,63,94,.35);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(244,63,94,.28);
+}
+
+
+/* Detailed: stack normally */
+
+.accounts:not(.compact) .profile-wrap { order: 1; }
+.accounts:not(.compact) .status-line { order: 2; }
+.accounts:not(.compact) .meta-row { order: 3; }
+.accounts:not(.compact) .uid { order: 4; }
+.accounts:not(.compact) .level-row { order: 5; margin-top: 12px; }
+.accounts:not(.compact) .bar { order: 6; margin-top: 8px; }
+.accounts:not(.compact) .bar-scale { order: 7; }
+.accounts:not(.compact) .tiles { order: 8; }
+.accounts:not(.compact) .facts { order: 9; }
+.accounts:not(.compact) .foot-row { order: 10; }
+
+.accounts:not(.compact) .acct-body {
+  display: flex; flex-direction: column;
+}
+.accounts:not(.compact) .foot-row {
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-top: 10px; border-top: 1px solid rgba(255,255,255,.05);
+  margin-top: 4px;
+}
+.accounts:not(.compact) .foot-stats { display: none; }
+.accounts:not(.compact) .btn-row { border: none; padding: 0; }
+.accounts:not(.compact) .bar { margin-top: 8px; }
+.accounts:not(.compact) .level-target {
+  font-size: 11px; color: #fbbf24; font-weight: 600; margin-top: 4px;
+}
+
+/* ===== Compact card layout =====
+   [img] .............. [Lv]
+   status               [%]
+   name · region        [target]
+   uid
+   [gained][matches] ........ [buttons]   drag handle mid-right
+   [======== progress bar ========]
+*/
+.accounts.compact .detail-only { display: none !important; }
+.accounts.compact .facts { display: none !important; }
+
+.accounts.compact .acct {
+  position: relative;
+  padding: 12px 34px 8px 12px; /* right room for drag handle */
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto auto auto auto auto;
+  grid-template-areas:
+    "img mid level"
+    "status mid level"
+    "meta mid level"
+    "uid mid level"
+    "foot foot foot"
+    "bar bar bar";
+  column-gap: 12px;
+  row-gap: 3px;
+  align-items: start;
+  min-height: 0;
+}
+
+.accounts.compact .drag-handle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 28px; height: 28px;
+  margin: 0;
+  z-index: 3;
+}
+
+.accounts.compact .acct-body {
+  display: contents;
+  padding: 0;
+}
+
+.accounts.compact .profile-wrap {
+  grid-area: img;
+  max-width: 200px;
+  width: 200px;
+  margin: 0;
+}
+
+.accounts.compact .status-line {
+  grid-area: status;
+  margin: 0;
+  align-self: start;
+}
+
+.accounts.compact .meta-row {
+  grid-area: meta;
+  margin: 0;
+  align-self: start;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 2px;
+}
+
+.accounts.compact .uid {
+  grid-area: uid;
+  font-size: 10px;
+  margin: 4px 0 0 0; /* clear gap under name/region */
+  padding-top: 2px;
+  align-self: start;
+  line-height: 1.3;
+}
+
+.accounts.compact .level-row {
+  grid-area: level;
+  margin: 0;
+  padding: 0 2px 0 8px;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  align-self: start;
+  gap: 0;
+  text-align: right;
+  line-height: 1.25;
+  min-width: 72px;
+}
+
+.accounts.compact .level-name {
+  font-size: 16px;
+  display: block;
+}
+.accounts.compact .level-name small {
+  display: inline;
+  margin-right: 4px;
+  font-size: 11px;
+}
+.accounts.compact .level-pct {
+  display: block;
+  font-size: 12px;
+  margin-top: 2px;
+  color: var(--muted);
+}
+.accounts.compact .level-pct small { font-size: 10px; }
+.accounts.compact .level-target {
+  display: block;
+  font-size: 10px;
+  color: #fbbf24;
+  font-weight: 600;
+  margin-top: 6px;
+  letter-spacing: 0.01em;
+}
+
+.accounts.compact .foot-row {
+  grid-area: foot;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.accounts.compact .foot-stats {
+  display: flex; gap: 12px; flex: 0 1 auto; min-width: 0;
+}
+.accounts.compact .foot-stats div { display: flex; flex-direction: column; }
+.accounts.compact .foot-stats dt { font-size: 10px; color: var(--muted); line-height: 1.2; }
+.accounts.compact .foot-stats dd { font-family: var(--mono); font-size: 12px; font-weight: 500; line-height: 1.2; }
+.accounts.compact .foot-stats dd.gain { color: var(--green); }
+
+.accounts.compact .btn-row {
+  border: none; padding: 0; margin: 0 0 0 auto;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.accounts.compact .btn-group {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+}
+.accounts.compact .btn-group + .btn-group::before {
+  content: "|";
+  color: rgba(255,255,255,.18);
+  font-size: 11px;
+  margin-right: 4px;
+  line-height: 26px;
+}
+.accounts.compact .mbtn {
+  width: 26px; height: 26px; font-size: 11px; border-radius: 8px;
+}
+
+.accounts.compact .bar {
+  grid-area: bar;
+  height: 5px;
+  margin-top: 6px;
+}
+.accounts.compact .bar-scale,
+.accounts.compact .tiles { display: none !important; }
+
+@media (max-width: 560px) {
+  .accounts.compact .acct {
+    /* same structure as desktop — keep image large */
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "img mid level"
+      "status mid level"
+      "meta mid level"
+      "uid mid level"
+      "foot foot foot"
+      "bar bar bar";
+    padding: 12px 34px 10px 12px;
+    column-gap: 10px;
+  }
+  .accounts.compact .profile-wrap {
+    max-width: 200px;
+    width: 200px;
+  }
+  .accounts.compact .foot-row {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .accounts.compact .btn-row {
+    flex-wrap: nowrap;
+    margin-left: auto;
+  }
+  .accounts.compact .mbtn {
+    width: 26px; height: 26px;
+  }
+}
+
+@media (max-width: 380px) {
+  .accounts.compact .profile-wrap {
+    max-width: 160px;
+    width: 160px;
+  }
+}
+
+
+.empty {
+  text-align: center; padding: 48px 16px; color: var(--muted);
+  border-radius: 16px; background: var(--panel); box-shadow: var(--shadow);
+}
+.empty i { font-size: 28px; opacity: .4; margin-bottom: 8px; }
+
+/* Add page */
+.add-page { max-width: 420px; margin: 0 auto; }
+.add-page h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.field { margin-bottom: 14px; }
+.field label {
+  display: block; font-size: 12px; font-weight: 500;
+  color: var(--muted); margin-bottom: 6px;
+}
+.field .hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.input {
+  width: 100%; background: var(--inset); border: none; border-radius: 10px;
+  padding: 11px 14px; font-size: 14px; outline: none;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.04);
+  transition: box-shadow .15s;
+}
+.input:focus { box-shadow: inset 0 1px 3px rgba(0,0,0,.4), 0 0 0 2px rgba(250,250,250,.2); }
+.primary-btn {
+  width: 100%; height: 44px; border: none; border-radius: 12px;
+  background: #fafafa; color: #0a0a0a; font-weight: 600; cursor: pointer;
+  box-shadow: var(--shadow); display: inline-flex; align-items: center;
+  justify-content: center; gap: 8px; transition: filter .15s, transform .12s;
+}
+.primary-btn:hover { filter: brightness(0.95); }
+.primary-btn:active { transform: translateY(1px); }
+
+/* Logs page — full width, no inner box */
+.logs-page h2 { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+.log-full {
+  font-family: var(--mono); font-size: 12px; line-height: 1.6;
+  min-height: 55vh;
+}
+.log-item { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.03); }
+.log-time { color: #52525b; margin-right: 8px; }
+.log-info { color: #93c5fd; }
+.log-success { color: var(--green); }
+.log-warning { color: var(--gold); }
+.log-error { color: var(--rose); }
+
+/* Modal */
+.modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.72);
+  backdrop-filter: blur(6px); display: none; align-items: center;
+  justify-content: center; z-index: 200; padding: 16px;
+}
+.modal.active { display: flex; }
+.modal-card {
+  background: var(--panel); border-radius: 18px; width: 100%; max-width: 420px;
+  padding: 22px; max-height: 90vh; overflow: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,.7);
+  animation: pageIn .2s ease;
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.modal-head h3 { font-size: 15px; font-weight: 600; }
+.modal-actions {
+  display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;
+}
+
+/* Bottom tab bar — 5 slots: dash | logs | +add | completed | settings */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: calc(var(--tab-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(17,17,17,.94); backdrop-filter: blur(14px);
+  display: flex; align-items: flex-end; justify-content: space-between;
+  z-index: 150;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.5);
+  padding-left: 4px; padding-right: 4px;
+}
+.tab {
+  flex: 1 1 0; min-width: 0; max-width: none; height: var(--tab-h);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; border: 0; background: transparent; color: var(--muted);
+  cursor: pointer; font-size: 9px; font-weight: 500; transition: color .15s;
+  padding: 0 2px;
+}
+.tab i { font-size: 17px; }
+.tab.active { color: #fafafa; }
+.tab span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.tab-add-wrap {
+  flex: 0 0 auto; width: 72px; display: flex; justify-content: center;
+  position: relative; top: -18px;
+}
+.tab-add {
+  width: 56px; height: 56px; border-radius: 16px;
+  border: 4px solid var(--bg); background: #fafafa; color: #0a0a0a;
+  display: grid; place-items: center; cursor: pointer; font-size: 22px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.55), 0 0 24px rgba(255,255,255,.05);
+  transition: transform .15s;
+}
+.tab-add:hover { transform: scale(1.05); }
+.tab-add:active { transform: scale(.96); }
+.tab-add.active { box-shadow: 0 4px 18px rgba(0,0,0,.55), 0 0 0 2px rgba(250,250,250,.35); }
+
+.settings-page, .completed-page { max-width: 520px; margin: 0 auto; }
+.settings-page h2, .completed-page h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+.settings-page .field { margin-bottom: 14px; }
+.settings-page .section-label {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .04em;
+  margin: 18px 0 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,.06);
+}
+.settings-page .section-label:first-of-type { margin-top: 0; border-top: 0; padding-top: 0; }
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 10px 0;
+}
+.toggle-row label { font-size: 13px; color: var(--text); }
+.toggle-row input[type="checkbox"] {
+  width: 18px; height: 18px; accent-color: #fafafa; cursor: pointer;
+}
+.completed-toolbar {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+}
+.completed-json {
+  width: 100%; min-height: 280px; font-family: var(--mono); font-size: 12px;
+  background: var(--inset); border: none; border-radius: 12px;
+  padding: 14px; color: var(--text); resize: vertical; line-height: 1.5;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.4);
+}
+.completed-meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+@media (max-width: 720px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .tiles { grid-template-columns: 1fr; }
+  .accounts:not(.compact) .btn-group + .btn-group { border-left: 0; padding-left: 0; margin-left: 0; }
+  .accounts:not(.compact) .level-name { font-size: 24px; }
+}
+@media (max-width: 400px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fill, .acct.is-running .profile-wrap::after, .live i, .page { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- DASHBOARD -->
+  <section class="page active" id="page-dash">
+    <header class="top">
+      <div class="brand">
+        <div class="logo"><i class="fa-solid fa-snowflake"></i></div>
+        <div>
+          <h1>Yasin Bhai</h1>
+          <p><span class="live"><i></i> Live</span> Level-up bot</p>
+        </div>
+      </div>
+      <button type="button" class="ghost-btn" id="btn-refresh-all" title="Refresh EXP on all accounts">
+        <i class="fa-solid fa-arrows-rotate"></i> Refresh EXP
+      </button>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><label>Accounts</label><b id="stat-accounts">0</b></div>
+      <div class="stat"><label>EXP gained</label><b id="stat-exp" class="pos">+0</b></div>
+      <div class="stat"><label>EXP / hour</label><b id="stat-speed">—</b></div>
+      <div class="stat"><label>Matches</label><b id="stat-matches">0</b></div>
+    </div>
+
+    <div class="panel-head">
+      <h2>Accounts <span id="acct-count" style="color:var(--muted);font-weight:500"></span></h2>
+      <div class="seg">
+        <button type="button" id="view-detailed">Detailed</button>
+        <button type="button" id="view-compact" class="active">Compact</button>
+      </div>
+    </div>
+    <div class="accounts" id="accounts-container"></div>
+  </section>
+
+  <!-- ADD -->
+  <section class="page" id="page-add">
+    <div class="add-page" style="max-width:560px">
+      <h2>Accounts</h2>
+      <div class="seg" style="margin-bottom:16px" id="add-mode-seg">
+        <button type="button" class="active" data-add-mode="single">Single</button>
+        <button type="button" data-add-mode="bulk">Bulk JSON</button>
+        <button type="button" data-add-mode="file">Edit file</button>
+      </div>
+
+      <!-- Single -->
+      <div id="add-panel-single">
+        <form id="add-form">
+          <div class="field">
+            <label for="acc-type">Account type</label>
+            <select class="input" id="acc-type">
+              <option value="guest">Guest (UID + Password)</option>
+              <option value="token">Access Token</option>
+            </select>
+          </div>
+          <div id="guest-fields">
+            <div class="field">
+              <label for="acc-uid">UID</label>
+              <input class="input" id="acc-uid" placeholder="UID" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="acc-password">Password</label>
+              <input class="input" id="acc-password" placeholder="Password" autocomplete="off">
+            </div>
+          </div>
+          <div id="token-fields" style="display:none">
+            <div class="field">
+              <label for="acc-token">Access Token</label>
+              <textarea class="input" id="acc-token" rows="3" placeholder="Access Token"></textarea>
+            </div>
+          </div>
+          <button type="submit" class="primary-btn"><i class="fa-solid fa-plus"></i> Save &amp; start</button>
+        </form>
+      </div>
+
+      <!-- Bulk JSON import -->
+      <div id="add-panel-bulk" style="display:none">
+        <div class="field">
+          <label for="bulk-json">Paste JSON accounts</label>
+          <textarea class="input completed-json" id="bulk-json" rows="12" placeholder='{
+    "uid": 4228841614,
+    "password": "PASS1"
+  },
+  {
+    "uid": 4228841733,
+    "password": "PASS2"
+  }'></textarea>
+          <p class="hint" style="margin-top:8px;font-size:11px;color:var(--muted)">
+            Paste comma-separated objects (no outer [ ] needed), a full JSON array, or one object per line. Numeric uids OK. Guest needs <code>uid</code>+<code>password</code>; token accounts need <code>token</code>.
+          </p>
+        </div>
+        <button type="button" class="primary-btn" id="btn-bulk-import"><i class="fa-solid fa-file-import"></i> Import &amp; start</button>
+      </div>
+
+      <!-- Raw accounts.json editor -->
+      <div id="add-panel-file" style="display:none">
+        <div class="field">
+          <label for="accounts-file-editor">accounts.json</label>
+          <textarea class="input completed-json" id="accounts-file-editor" rows="16" spellcheck="false"></textarea>
+          <p class="hint" style="margin-top:8px;font-size:11px;color:var(--muted)">
+            Full file contents. Edit freely, then save. New entries start workers; removed ones stay until you delete them from the dashboard.
+          </p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="primary-btn" style="width:auto;padding:0 18px;height:40px" id="btn-save-accounts-file"><i class="fa-solid fa-floppy-disk"></i> Save file</button>
+          <button type="button" class="ghost-btn" id="btn-reload-accounts-file"><i class="fa-solid fa-rotate"></i> Reload</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGS -->
+  <section class="page" id="page-logs">
+    <div class="logs-page">
+      <h2>Bot log</h2>
+      <div class="log-full" id="log-stream"></div>
+    </div>
+  </section>
+
+  <!-- COMPLETED -->
+  <section class="page" id="page-completed">
+    <div class="completed-page">
+      <h2>Target completed</h2>
+      <p class="completed-meta" id="completed-count">0 accounts</p>
+      <div class="completed-toolbar">
+        <button type="button" class="ghost-btn" id="btn-copy-completed"><i class="fa-solid fa-copy"></i> Copy JSON</button>
+        <button type="button" class="ghost-btn" id="btn-refresh-completed"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        <button type="button" class="ghost-btn" id="btn-clear-completed" style="color:#fda4af"><i class="fa-solid fa-trash"></i> Clear list</button>
+      </div>
+      <textarea class="completed-json" id="completed-json" readonly placeholder="No completed accounts yet"></textarea>
+      <p class="hint" style="margin-top:10px;font-size:11px;color:var(--muted)">Pretty multi-line objects (no outer [ ]). Copy and paste into Bulk JSON to re-import.</p>
+    </div>
+  </section>
+
+  <!-- GLOBAL SETTINGS -->
+  <section class="page" id="page-settings">
+    <div class="settings-page">
+      <h2>Bot settings</h2>
+      <form id="global-settings-form">
+        <div class="section-label">Match stacking</div>
+        <div class="field">
+          <label for="gs-max-lw">Max stackable matches (Lone Wolf)</label>
+          <input class="input" id="gs-max-lw" type="number" min="1" max="50" value="10">
+        </div>
+        <div class="field">
+          <label for="gs-max-br">Max stackable matches (Battle Royale)</label>
+          <input class="input" id="gs-max-br" type="number" min="1" max="20" value="1">
+        </div>
+
+        <div class="section-label">Match timing</div>
+        <div class="field">
+          <label for="gs-start-interval">Start match interval (seconds)</label>
+          <input class="input" id="gs-start-interval" type="number" min="1" max="60" step="0.1" value="3">
+        </div>
+        <div class="field">
+          <label for="gs-new-delay">New match delay after found (seconds)</label>
+          <input class="input" id="gs-new-delay" type="number" min="0.5" max="30" step="0.1" value="3">
+        </div>
+        <div class="field">
+          <label for="gs-idle-br">BR match idle timeout (seconds)</label>
+          <input class="input" id="gs-idle-br" type="number" min="3" max="120" step="0.5" value="15">
+        </div>
+        <div class="field">
+          <label for="gs-idle-lw">Lone Wolf match idle timeout (seconds)</label>
+          <input class="input" id="gs-idle-lw" type="number" min="3" max="60" step="0.5" value="8">
+        </div>
+
+        <div class="section-label">Account &amp; anti-ban</div>
+        <div class="field">
+          <label for="gs-exp-refresh">EXP refresh interval (seconds)</label>
+          <input class="input" id="gs-exp-refresh" type="number" min="5" max="300" step="1" value="25">
+        </div>
+        <div class="field">
+          <label for="gs-token-ttl">Token cache TTL (seconds)</label>
+          <input class="input" id="gs-token-ttl" type="number" min="60" max="7200" step="1" value="1200">
+        </div>
+        <div class="field">
+          <label for="gs-rotate-matches">Device rotate every N matches</label>
+          <input class="input" id="gs-rotate-matches" type="number" min="1" max="100" value="5">
+        </div>
+        <div class="field">
+          <label for="gs-rotate-seconds">Device rotate every N seconds</label>
+          <input class="input" id="gs-rotate-seconds" type="number" min="60" max="86400" value="900">
+        </div>
+
+        <div class="section-label">Behaviour</div>
+        <div class="toggle-row">
+          <label for="gs-safe-play">Safe play mode (timing jitter)</label>
+          <input type="checkbox" id="gs-safe-play" checked>
+        </div>
+        <div class="toggle-row">
+          <label for="gs-human-move">Human-like movement</label>
+          <input type="checkbox" id="gs-human-move" checked>
+        </div>
+        <div class="toggle-row">
+          <label for="gs-cancel-br">Cancel BR sessions on Lone Wolf unlock</label>
+          <input type="checkbox" id="gs-cancel-br">
+        </div>
+
+        <button type="submit" class="primary-btn" style="margin-top:18px"><i class="fa-solid fa-floppy-disk"></i> Save settings</button>
+      </form>
+    </div>
+  </section>
+</div>
+
+<!-- Settings modal -->
+<div class="modal" id="settings-modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Account settings</h3>
+      <button type="button" class="mbtn" id="btn-close-settings" style="width:32px;height:32px" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form id="settings-form">
+      <input type="hidden" id="set-uid">
+      <div class="field">
+        <label>Nickname</label>
+        <input class="input" id="set-nick" disabled>
+      </div>
+      <div class="field">
+        <label for="set-type">Login type</label>
+        <select class="input" id="set-type">
+          <option value="guest">Guest</option>
+          <option value="token">Access Token</option>
+        </select>
+      </div>
+      <div id="set-guest">
+        <div class="field">
+          <label for="set-guest-uid">UID</label>
+          <input class="input" id="set-guest-uid" placeholder="UID">
+        </div>
+        <div class="field">
+          <label for="set-password">Password</label>
+          <input class="input" id="set-password" placeholder="Password">
+        </div>
+      </div>
+      <div id="set-token" style="display:none">
+        <div class="field">
+          <label for="set-token-val">Access Token</label>
+          <textarea class="input" id="set-token-val" rows="3" placeholder="Access Token"></textarea>
+        </div>
+      </div>
+      <div class="field">
+        <label for="set-target">Target level (optional)</label>
+        <input class="input" id="set-target" type="number" min="1" max="100" placeholder="Leave empty for no target">
+        <p class="hint">When reached, account stops and is saved to <code>{level}_level_accounts.json</code>.</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="ghost-btn" id="btn-set-cancel">Cancel</button>
+        <button type="submit" class="primary-btn" style="width:auto;padding:0 18px;height:36px">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<template id="acct-template">
+  <article class="acct" draggable="true">
+    <span class="drag-handle" title="Drag to reorder" aria-label="Reorder">
+      <i class="fa-solid fa-grip-vertical"></i>
+    </span>
+    <div class="acct-body">
+      <div class="profile-wrap">
+        <img data-f="pimg" alt="" style="display:none" draggable="false">
+        <div class="profile-ph" data-f="pph"><i class="fa-solid fa-image"></i></div>
+      </div>
+      <div class="status-line">
+        <span class="mpill status online" data-f="pill">
+          <i class="dot"></i><span data-f="statusText">Online</span>
+        </span>
+        <span class="mpill runtime" data-f="runtimePill" title="Time running">
+          <i class="fa-regular fa-clock"></i>
+          <span data-f="runtime">00:00:00</span>
+        </span>
+      </div>
+      <div class="meta-row">
+        <span class="name" data-f="nick"></span>
+        <span class="mpill region" data-f="region"></span>
+      </div>
+      <div class="uid" data-f="uid"></div>
+
+      <div class="level-row">
+        <div class="level-name"><small>Level</small><span data-f="level">1</span></div>
+        <div class="level-pct"><span data-f="pct">0</span><small>%</small></div>
+        <div class="level-target" data-f="target" style="display:none"></div>
+      </div>
+
+      <div class="bar-scale detail-only">
+        <span><b data-f="inLevel">0</b> / <b data-f="needed">0</b> EXP</span>
+        <span data-f="nextLabel"></span>
+      </div>
+
+      <div class="tiles detail-only">
+        <div class="tile">
+          <span>EXP left</span>
+          <b data-f="left">0</b>
+          <small data-f="leftSub"></small>
+        </div>
+        <div class="tile">
+          <span>Speed</span>
+          <b data-f="speed">—</b>
+          <small data-f="speedSub">EXP / hour</small>
+        </div>
+        <div class="tile eta">
+          <span data-f="etaLabel">ETA</span>
+          <b data-f="eta">—</b>
+          <small data-f="etaAt"></small>
+        </div>
+      </div>
+
+      <dl class="facts detail-only">
+        <div><dt>Started</dt><dd data-f="initial">0</dd></div>
+        <div><dt>Current</dt><dd data-f="current">0</dd></div>
+        <div><dt>Gained</dt><dd class="gain" data-f="gained-d">+0</dd></div>
+        <div><dt>Matches</dt><dd data-f="matches-d">0</dd></div>
+      </dl>
+
+      <div class="foot-row">
+        <div class="foot-stats">
+          <div><dt>Gained</dt><dd class="gain" data-f="gained">+0</dd></div>
+          <div><dt>Matches</dt><dd data-f="matches">0</dd></div>
+        </div>
+        <div class="btn-row">
+          <div class="btn-group">
+            <button type="button" class="mbtn" data-act="settings" title="Settings"><i class="fa-solid fa-gear"></i></button>
+            <button type="button" class="mbtn" data-act="refresh" title="Refresh EXP"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="mbtn" data-act="pause" title="Pause"><i class="fa-solid fa-pause"></i></button>
+            <button type="button" class="mbtn" data-act="resume" title="Resume" style="display:none"><i class="fa-solid fa-play"></i></button>
+            <button type="button" class="mbtn" data-act="stop" title="Stop"><i class="fa-solid fa-stop"></i></button>
+            <button type="button" class="mbtn" data-act="start" title="Start" style="display:none"><i class="fa-solid fa-bolt"></i></button>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="mbtn warn" data-act="restart" title="Restart (fresh login)"><i class="fa-solid fa-arrow-rotate-right"></i></button>
+            <button type="button" class="mbtn danger" data-act="delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bar" data-f="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+        <div class="fill no-anim" data-f="fill"></div>
+      </div>
+    </div>
+  </article>
+</template>
+
+<nav class="tabbar" aria-label="Main navigation">
+  <button type="button" class="tab active" data-page="dash">
+    <i class="fa-solid fa-house"></i><span>Dashboard</span>
+  </button>
+  <button type="button" class="tab" data-page="logs">
+    <i class="fa-solid fa-terminal"></i><span>Logs</span>
+  </button>
+  <div class="tab-add-wrap">
+    <button type="button" class="tab-add" data-page="add" aria-label="Add account">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+  </div>
+  <button type="button" class="tab" data-page="completed">
+    <i class="fa-solid fa-clipboard-check"></i><span>Completed</span>
+  </button>
+  <button type="button" class="tab" data-page="settings">
+    <i class="fa-solid fa-sliders"></i><span>Settings</span>
+  </button>
+</nav>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n) => Math.round(n).toLocaleString();
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // bootTime removed (uptime stat removed)
+  const cards = new Map();
+  let isDragging = false;
+  let dragUid = null;
+  let lastLogKey = '';
+  let fetching = false;
+
+  /* ---------- Tabs ---------- */
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + name));
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.page === name));
+    document.querySelectorAll('.tab-add').forEach(t => t.classList.toggle('active', t.dataset.page === name));
+    if (name === 'completed') loadCompleted();
+    if (name === 'settings') loadGlobalSettings();
+  }
+  document.querySelectorAll('[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => showPage(btn.dataset.page));
+  });
+
+  /* ---------- View mode ---------- */
+  const VIEW_KEY = 'ff_dash_view';
+  function applyView(mode) {
+    const c = mode === 'compact';
+    $('accounts-container')?.classList.toggle('compact', c);
+    $('view-detailed')?.classList.toggle('active', !c);
+    $('view-compact')?.classList.toggle('active', c);
+    try { localStorage.setItem(VIEW_KEY, c ? 'compact' : 'detailed'); } catch (_) {}
+  }
+  try { applyView(localStorage.getItem(VIEW_KEY) || 'compact'); } catch (_) { applyView('compact'); }
+  $('view-detailed')?.addEventListener('click', () => applyView('detailed'));
+  $('view-compact')?.addEventListener('click', () => applyView('compact'));
+
+  /* ---------- Helpers ---------- */
+  function fmtDuration(sec) {
+    sec = Math.max(0, Math.round(sec));
+    const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${String(m).padStart(2, '0')}m`;
+    if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s`;
+    return `${s}s`;
+  }
+  function fmtRuntime(sec) {
+    sec = Math.max(0, Math.floor(sec || 0));
+    const h = String(Math.floor(sec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  }
+  function fmtArrival(sec) {
+    const t = new Date(Date.now() + sec * 1000);
+    return 'around ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function setText(el, v) {
+    if (!el) return;
+    v = String(v ?? '');
+    if (el.textContent !== v) el.textContent = v;
+  }
+  function setNumber(el, to, prefix = '') {
+    if (!el) return;
+    const from = el.dataset.v === undefined ? to : Number(el.dataset.v);
+    el.dataset.v = to;
+    cancelAnimationFrame(el._raf);
+    if (reduceMotion || from === to) { setText(el, prefix + fmt(to)); return; }
+    const t0 = performance.now(), dur = 700;
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / dur);
+      el.textContent = prefix + fmt(from + (to - from) * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) el._raf = requestAnimationFrame(step);
+    };
+    el._raf = requestAnimationFrame(step);
+  }
+  function statusClass(s) {
+    switch (s) {
+      case 'IN_MATCH': return 'match';
+      case 'SEARCHING': case 'CONNECTING': return 'busy';
+      case 'PAUSED': return 'paused';
+      case 'STOPPED': return 'stopped';
+      case 'ERROR': case 'OFFLINE': return 'bad';
+      default: return 'online';
+    }
+  }
+  function statusLabel(a) {
+    switch (a.status) {
+      case 'IN_MATCH': return `Playing (${a.active_matches || 0} Stacked)`;
+      case 'SEARCHING': return 'Matchmaking' + ({BR: ' (BR)', LW: ' (Lone Wolf)'}[a.search_mode] || '');
+      case 'CONNECTING': return 'Connecting';
+      case 'PAUSED': return 'Paused';
+      case 'STOPPED': return 'Stopped';
+      case 'ERROR': return 'Error';
+      case 'OFFLINE': return 'Offline';
+      default: return 'Online';
+    }
+  }
+  function isRunning(a) {
+    const c = a.control || 'run';
+    if (c === 'pause' || c === 'stop') return false;
+    return !['PAUSED', 'STOPPED', 'ERROR', 'OFFLINE'].includes(a.status);
+  }
+  function setBar(card, pct) {
+    const { fill, bar } = card.refs;
+    if (!fill) return;
+    fill.style.width = pct + '%';
+    bar?.setAttribute('aria-valuenow', pct.toFixed(1));
+    if (card.pct === undefined) {
+      requestAnimationFrame(() => requestAnimationFrame(() => fill.classList.remove('no-anim')));
+    }
+    card.pct = pct;
+  }
+
+  /* ---------- Cards ---------- */
+  function createCard(uid) {
+    const el = $('acct-template').content.firstElementChild.cloneNode(true);
+    el.dataset.uid = uid;
+    const refs = {};
+    el.querySelectorAll('[data-f]').forEach(n => { refs[n.dataset.f] = n; });
+    return { el, refs, level: undefined, pct: undefined, eta: null };
+  }
+
+  function updateCard(card, acc) {
+    const r = card.refs;
+    setText(r.nick, acc.nickname || 'Player');
+    setText(r.region, acc.region || '—');
+    setText(r.uid, 'UID ' + acc.uid);
+    setText(r.level, acc.level);
+
+    const cls = 'mpill status ' + statusClass(acc.status);
+    if (r.pill && r.pill.className !== cls) r.pill.className = cls;
+    setText(r.statusText, statusLabel(acc));
+    card.el.classList.toggle('is-running', isRunning(acc));
+    card.runtimeSec = Number(acc.runtime_seconds) || 0;
+    card.runtimeLive = isRunning(acc);
+    card.runtimeAt = performance.now();
+    setText(r.runtime, fmtRuntime(card.runtimeSec));
+
+    if (r.pimg && acc.profile_image) {
+      let src = String(acc.profile_image);
+      if (!src.startsWith('data:') && !src.startsWith('http')) {
+        src = src.startsWith('/') ? src : ('/' + src.replace(/^\/+/, ''));
+      }
+      if (r.pimg.dataset.loaded !== src) {
+        r.pimg.onload = () => {
+          r.pimg.style.display = 'block';
+          if (r.pph) r.pph.style.display = 'none';
+        };
+        r.pimg.onerror = () => {
+          r.pimg.style.display = 'none';
+          if (r.pph) r.pph.style.display = 'grid';
+        };
+        r.pimg.src = src;
+        r.pimg.dataset.loaded = src;
+      }
+    } else if (r.pph) {
+      if (r.pimg) r.pimg.style.display = 'none';
+      r.pph.style.display = 'grid';
+    }
+
+    if (r.target) {
+      if (acc.target_level) {
+        r.target.style.display = '';
+        setText(r.target, 'Target Lv ' + acc.target_level);
+      } else {
+        r.target.style.display = 'none';
+      }
+    }
+
+    const pct = acc.progress_pct || 0;
+    setBar(card, pct);
+    setText(r.pct, pct.toFixed(1));
+
+    if (acc.is_max) {
+      setText(r.inLevel, fmt(acc.exp_in_level || 0));
+      setText(r.needed, '∞');
+      setText(r.nextLabel, 'Max level');
+      setNumber(r.left, 0);
+      setText(r.leftSub, 'cap reached');
+    } else {
+      setNumber(r.inLevel, acc.exp_in_level || 0);
+      setText(r.needed, fmt(acc.exp_needed || 0));
+      setText(r.nextLabel, '→ Lv ' + ((acc.level || 1) + 1));
+      setNumber(r.left, acc.exp_to_next || 0);
+      setText(r.leftSub, 'to next level');
+    }
+
+    if (acc.exp_per_hour > 0) {
+      r.speed?.classList.remove('soft');
+      setNumber(r.speed, acc.exp_per_hour);
+      setText(r.speedSub, 'EXP / hour');
+    } else {
+      r.speed?.classList.add('soft');
+      delete r.speed?.dataset.v;
+      setText(r.speed, '…');
+      setText(r.speedSub, 'measuring');
+    }
+
+    if (acc.is_max) {
+      card.eta = null;
+      setText(r.eta, '—');
+      setText(r.etaAt, 'cap');
+    } else if (acc.eta_seconds != null) {
+      card.eta = { sec: acc.eta_seconds, at: performance.now() };
+      setText(r.eta, fmtDuration(acc.eta_seconds));
+      setText(r.etaAt, fmtArrival(acc.eta_seconds));
+    } else {
+      card.eta = null;
+      setText(r.eta, '…');
+      setText(r.etaAt, 'calculating');
+    }
+
+    setNumber(r.initial, acc.initial_exp || 0);
+    setNumber(r.current, acc.current_exp || 0);
+    setNumber(r.gained, acc.gained_exp || 0, '+');
+    setText(r.matches, acc.matches_played != null ? acc.matches_played : 0);
+    if (r['gained-d']) setNumber(r['gained-d'], acc.gained_exp || 0, '+');
+    if (r['matches-d']) setText(r['matches-d'], acc.matches_played != null ? acc.matches_played : 0);
+
+    const ctrl = acc.control || (acc.status === 'PAUSED' ? 'pause' : acc.status === 'STOPPED' ? 'stop' : 'run');
+    const el = card.el;
+    const show = (act, on) => { const b = el.querySelector(`[data-act="${act}"]`); if (b) b.style.display = on ? '' : 'none'; };
+    show('pause', ctrl === 'run');
+    show('resume', ctrl === 'pause');
+    show('stop', ctrl !== 'stop');
+    show('start', ctrl === 'stop');
+    show('restart', ctrl !== 'stop');
+  }
+
+  function renderAccounts(accounts) {
+    const box = $('accounts-container');
+    const seen = new Set();
+    setText($('acct-count'), accounts.length ? `(${accounts.length})` : '');
+
+    if (!accounts.length) {
+      if (!box.querySelector('.empty')) {
+        cards.forEach(c => c.el.remove());
+        cards.clear();
+        box.innerHTML = `<div class="empty"><i class="fa-solid fa-ghost"></i><p>No accounts running</p></div>`;
+      }
+      return;
+    }
+    box.querySelector('.empty')?.remove();
+
+    accounts.forEach(acc => {
+      const uid = String(acc.uid);
+      seen.add(uid);
+      let card = cards.get(uid);
+      if (!card) {
+        card = createCard(uid);
+        cards.set(uid, card);
+        box.appendChild(card.el);
+      }
+      updateCard(card, acc);
+    });
+
+    cards.forEach((c, u) => {
+      if (!seen.has(u)) { c.el.remove(); cards.delete(u); }
+    });
+
+    // Don't fight active drag
+    if (!isDragging) {
+      accounts.forEach((acc, i) => {
+        const el = cards.get(String(acc.uid))?.el;
+        if (el && box.children[i] !== el) box.insertBefore(el, box.children[i] || null);
+      });
+    }
+  }
+
+  function renderLogs(logs) {
+    const key = logs.length + '|' + (logs.length ? logs[logs.length - 1].time + logs[logs.length - 1].message : '');
+    if (key === lastLogKey) return;
+    lastLogKey = key;
+    const box = $('log-stream');
+    const frag = document.createDocumentFragment();
+    logs.forEach(log => {
+      const row = document.createElement('div');
+      row.className = 'log-item';
+      const t = document.createElement('span');
+      t.className = 'log-time';
+      t.textContent = `[${log.time}]`;
+      const m = document.createElement('span');
+      m.className = 'log-' + (log.level || 'info');
+      m.textContent = log.message;
+      row.append(t, m);
+      frag.appendChild(row);
+    });
+    box.replaceChildren(frag);
+  }
+
+  async function fetchStats() {
+    if (fetching) return;
+    fetching = true;
+    try {
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+      setText($('stat-accounts'), data.total_accounts);
+      setText($('stat-exp'), '+' + data.total_gained_exp.toLocaleString());
+      setText($('stat-matches'), data.total_matches.toLocaleString());
+      const combined = data.accounts.reduce((s, a) => s + (a.exp_per_hour || 0), 0);
+      setText($('stat-speed'), combined > 0 ? fmt(combined) : '—');
+      renderAccounts(data.accounts);
+      renderLogs(data.logs);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      fetching = false;
+    }
+  }
+
+  setInterval(() => {
+    cards.forEach(c => {
+      if (c.eta) {
+        const left = c.eta.sec - (performance.now() - c.eta.at) / 1000;
+        setText(c.refs.eta, left <= 0 ? 'Soon' : fmtDuration(left));
+      }
+      if (c.refs.runtime) {
+        let sec = c.runtimeSec || 0;
+        if (c.runtimeLive) {
+          sec += (performance.now() - (c.runtimeAt || performance.now())) / 1000;
+        }
+        setText(c.refs.runtime, fmtRuntime(sec));
+      }
+    });
+  }, 1000);
+
+  async function post(url, body) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  /* ---------- Smooth FLIP drag ---------- */
+  function flipReorder(container, mutator) {
+    const nodes = [...container.querySelectorAll('.acct')];
+    const first = new Map(nodes.map(n => [n, n.getBoundingClientRect()]));
+    mutator();
+    nodes.forEach(n => {
+      const last = n.getBoundingClientRect();
+      const f = first.get(n);
+      if (!f) return;
+      const dx = f.left - last.left;
+      const dy = f.top - last.top;
+      if (!dx && !dy) return;
+      n.style.transition = 'none';
+      n.style.transform = `translate(${dx}px, ${dy}px)`;
+      void n.offsetWidth;
+      n.style.transition = 'transform .28s cubic-bezier(.2,.8,.2,1)';
+      n.style.transform = '';
+      const clear = () => {
+        n.style.transition = '';
+        n.style.transform = '';
+        n.removeEventListener('transitionend', clear);
+      };
+      n.addEventListener('transitionend', clear);
+    });
+  }
+
+  const box = $('accounts-container');
+  box.addEventListener('dragstart', (e) => {
+    const acct = e.target.closest('.acct');
+    if (!acct || !e.target.closest('.drag-handle')) { e.preventDefault(); return; }
+    isDragging = true;
+    dragUid = acct.dataset.uid;
+    acct.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragUid);
+  });
+  box.addEventListener('dragend', () => {
+    document.querySelectorAll('.acct.dragging').forEach(n => n.classList.remove('dragging'));
+    dragUid = null;
+    isDragging = false;
+    const order = [...box.querySelectorAll('.acct')].map(n => n.dataset.uid);
+    post('/api/account/reorder', { order }).catch(() => {});
+  });
+  box.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const over = e.target.closest('.acct');
+    if (!over || over.dataset.uid === dragUid) return;
+    const dragging = box.querySelector('.acct.dragging');
+    if (!dragging || dragging === over) return;
+    const rect = over.getBoundingClientRect();
+    const before = e.clientY < rect.top + rect.height / 2;
+    const ref = before ? over : over.nextSibling;
+    if (ref === dragging || dragging.nextSibling === ref) return;
+    flipReorder(box, () => box.insertBefore(dragging, ref));
+  });
+  box.addEventListener('drop', (e) => e.preventDefault());
+
+  /* ---------- Actions ---------- */
+  box.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    const uid = btn.closest('.acct').dataset.uid;
+    const act = btn.dataset.act;
+    if (act === 'delete') {
+      if (!confirm('Permanently remove account ' + uid + '?')) return;
+      try { await post('/api/account/delete', { uid }); } catch (err) { console.error(err); }
+      fetchStats();
+    } else if (act === 'settings') {
+      openSettings(uid);
+    } else if (act === 'refresh') {
+      btn.classList.add('spin');
+      try { await post('/api/account/refresh', { uid }); } catch (err) {}
+      setTimeout(() => { btn.classList.remove('spin'); fetchStats(); }, 1200);
+    } else if (act === 'restart') {
+      if (!confirm('Restart this account?\nThis clears the login cache and performs a fresh login.')) return;
+      try { await post('/api/account/control', { uid, action: 'restart' }); } catch (err) {}
+      fetchStats();
+    } else if (['pause', 'resume', 'stop', 'start'].includes(act)) {
+      try { await post('/api/account/control', { uid, action: act }); } catch (err) {}
+      fetchStats();
+    }
+  });
+
+  $('btn-refresh-all')?.addEventListener('click', async () => {
+    const b = $('btn-refresh-all');
+    b.disabled = true;
+    try { await post('/api/account/refresh_all', {}); setTimeout(fetchStats, 1500); }
+    catch (e) {} finally { b.disabled = false; }
+  });
+
+  /* ---------- Add form / bulk / file ---------- */
+  function showAddMode(mode) {
+    ['single', 'bulk', 'file'].forEach(m => {
+      const panel = $('add-panel-' + m);
+      if (panel) panel.style.display = m === mode ? '' : 'none';
+    });
+    document.querySelectorAll('#add-mode-seg button').forEach(b => {
+      b.classList.toggle('active', b.dataset.addMode === mode);
+    });
+    if (mode === 'file') loadAccountsFileEditor();
+  }
+  document.querySelectorAll('#add-mode-seg button').forEach(b => {
+    b.addEventListener('click', () => showAddMode(b.dataset.addMode));
+  });
+
+  $('acc-type')?.addEventListener('change', () => {
+    const tok = $('acc-type').value === 'token';
+    $('guest-fields').style.display = tok ? 'none' : 'block';
+    $('token-fields').style.display = tok ? 'block' : 'none';
+  });
+  $('add-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let payload;
+    if ($('acc-type').value === 'guest') {
+      const uid = $('acc-uid').value.trim();
+      const password = $('acc-password').value.trim();
+      if (!uid || !password) return alert('Enter UID and Password');
+      payload = { uid, password };
+    } else {
+      const token = $('acc-token').value.trim();
+      if (!token) return alert('Enter Access Token');
+      payload = { token };
+    }
+    try {
+      const data = await post('/api/account/add', payload);
+      if (data.status === 'ok') {
+        $('add-form').reset();
+        showPage('dash');
+        fetchStats();
+      } else alert(data.error || 'Error');
+    } catch (err) { alert(err); }
+  });
+
+  function parseBulkJson(text) {
+    text = (text || '').trim();
+    if (!text) return [];
+    // Strip trailing commas before } or ]
+    const stripCommas = (s) => s.replace(/,\s*([}\]])/g, '$1');
+    const attempts = [];
+    const cleaned = stripCommas(text);
+    attempts.push(cleaned);
+    if (!cleaned.startsWith('[')) {
+      attempts.push('[' + cleaned + ']');
+      attempts.push('[' + cleaned.replace(/,\s*$/, '') + ']');
+    }
+    let lastErr = null;
+    for (const cand of attempts) {
+      try {
+        const data = JSON.parse(cand);
+        if (Array.isArray(data)) return data;
+        if (data && typeof data === 'object') return [data];
+      } catch (e) { lastErr = e; }
+    }
+    // NDJSON fallback
+    const rows = [];
+    for (const line of text.split(/\n/)) {
+      let line2 = line.trim().replace(/,$/, '');
+      if (!line2 || line2 === '[' || line2 === ']') continue;
+      try { rows.push(JSON.parse(stripCommas(line2))); } catch (_) {}
+    }
+    if (rows.length) return rows;
+    throw lastErr || new Error('Invalid JSON');
+  }
+
+  $('btn-bulk-import')?.addEventListener('click', async () => {
+    const raw = $('bulk-json')?.value || '';
+    let accounts;
+    try {
+      accounts = parseBulkJson(raw);
+    } catch (e) {
+      // Server has a looser parser — still try sending raw
+      accounts = null;
+    }
+    if (accounts && !accounts.length) return alert('No accounts found in paste');
+    try {
+      const data = await post('/api/account/add', accounts ? { accounts } : { raw });
+      if (data.status === 'ok') {
+        alert(`Imported ${data.added} new account(s). Total in file: ${data.total}`);
+        $('bulk-json').value = '';
+        showPage('dash');
+        fetchStats();
+      } else alert(data.error || 'Error');
+    } catch (err) { alert(err); }
+  });
+
+  async function loadAccountsFileEditor() {
+    try {
+      const res = await fetch('/api/accounts/file');
+      const data = await res.json();
+      if (data.status !== 'ok') return alert(data.error || 'Failed to load');
+      const ta = $('accounts-file-editor');
+      if (ta) ta.value = data.raw || '[]';
+    } catch (e) { alert(e); }
+  }
+  $('btn-reload-accounts-file')?.addEventListener('click', loadAccountsFileEditor);
+  $('btn-save-accounts-file')?.addEventListener('click', async () => {
+    const raw = $('accounts-file-editor')?.value || '';
+    try {
+      // Validate JSON before send
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return alert('accounts.json must be a JSON array');
+    } catch (e) {
+      return alert('Invalid JSON: ' + e.message);
+    }
+    try {
+      const data = await post('/api/accounts/file', { raw });
+      if (data.status === 'ok') {
+        alert(`Saved ${data.total} account(s)` + (data.launched ? `, launched ${data.launched} new` : ''));
+        fetchStats();
+      } else alert(data.error || 'Error');
+    } catch (err) { alert(err); }
+  });
+
+  /* ---------- Settings ---------- */
+  async function openSettings(uid) {
+    try {
+      const res = await fetch('/api/account/credentials?uid=' + encodeURIComponent(uid));
+      const data = await res.json();
+      if (data.status !== 'ok') return alert(data.error || 'Failed');
+      $('set-uid').value = data.uid;
+      $('set-nick').value = data.nickname || '';
+      $('set-type').value = data.auth_type === 'token' ? 'token' : 'guest';
+      $('set-guest-uid').value = data.guest_uid || '';
+      $('set-password').value = data.password || '';
+      $('set-token-val').value = data.token || '';
+      $('set-target').value = data.target_level != null ? data.target_level : '';
+      const tok = $('set-type').value === 'token';
+      $('set-guest').style.display = tok ? 'none' : 'block';
+      $('set-token').style.display = tok ? 'block' : 'none';
+      $('settings-modal').classList.add('active');
+    } catch (err) { alert(err); }
+  }
+  $('btn-close-settings')?.addEventListener('click', () => $('settings-modal').classList.remove('active'));
+  $('btn-set-cancel')?.addEventListener('click', () => $('settings-modal').classList.remove('active'));
+  $('set-type')?.addEventListener('change', () => {
+    const tok = $('set-type').value === 'token';
+    $('set-guest').style.display = tok ? 'none' : 'block';
+    $('set-token').style.display = tok ? 'block' : 'none';
+  });
+  $('settings-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const uid = $('set-uid').value;
+    const auth_type = $('set-type').value;
+    const payload = { uid, auth_type, target_level: $('set-target').value.trim() };
+    if (auth_type === 'token') {
+      payload.token = $('set-token-val').value.trim();
+      if (!payload.token) return alert('Access Token required');
+    } else {
+      payload.guest_uid = $('set-guest-uid').value.trim();
+      payload.password = $('set-password').value.trim();
+      if (!payload.guest_uid) return alert('UID is required');
+      // Allow empty password only if we are not changing uid — server will reject empty new password
+      if (!payload.password) return alert('Password is required (reload settings if it did not appear)');
+    }
+    try {
+      const data = await post('/api/account/credentials', payload);
+      if (data.status === 'ok') {
+        $('settings-modal').classList.remove('active');
+        fetchStats();
+      } else alert(data.error || 'Error');
+    } catch (err) { alert(err); }
+  });
+
+
+  /* ---------- Completed accounts ---------- */
+  function formatCompletedJson(accounts) {
+    if (!accounts || !accounts.length) return '';
+    // Multi-line objects with commas (matches bulk import format)
+    return accounts.map(a => {
+      const obj = {};
+      if (a.uid != null) {
+        const n = Number(a.uid);
+        obj.uid = Number.isFinite(n) && String(n) === String(a.uid).trim() ? n : a.uid;
+        obj.password = a.password || '';
+      } else if (a.token) {
+        obj.token = a.token;
+      }
+      return JSON.stringify(obj, null, 4);
+    }).join(',\n');
+  }
+  async function loadCompleted() {
+    try {
+      const res = await fetch('/api/completed');
+      const data = await res.json();
+      const list = data.accounts || [];
+      setText($('completed-count'), list.length + ' account' + (list.length === 1 ? '' : 's'));
+      const ta = $('completed-json');
+      if (ta) ta.value = (data.pretty && data.pretty.trim()) ? data.pretty : formatCompletedJson(list);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  $('btn-refresh-completed')?.addEventListener('click', loadCompleted);
+  $('btn-copy-completed')?.addEventListener('click', async () => {
+    const ta = $('completed-json');
+    const text = (ta && ta.value) || '';
+    if (!text.trim()) return alert('Nothing to copy');
+    try {
+      await navigator.clipboard.writeText(text);
+      const b = $('btn-copy-completed');
+      if (b) {
+        const prev = b.innerHTML;
+        b.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+        setTimeout(() => { b.innerHTML = prev; }, 1500);
+      }
+    } catch (e) {
+      ta.select();
+      document.execCommand('copy');
+      alert('Copied');
+    }
+  });
+  $('btn-clear-completed')?.addEventListener('click', async () => {
+    if (!confirm('Clear the completed accounts list?')) return;
+    try {
+      await post('/api/completed/clear', {});
+      loadCompleted();
+    } catch (e) { alert(e); }
+  });
+
+  /* ---------- Global settings ---------- */
+  async function loadGlobalSettings() {
+    try {
+      const res = await fetch('/api/settings');
+      const data = await res.json();
+      const s = data.settings || {};
+      if ($('gs-max-lw')) $('gs-max-lw').value = s.max_stack_lw ?? 10;
+      if ($('gs-max-br')) $('gs-max-br').value = s.max_stack_br ?? 1;
+      if ($('gs-start-interval')) $('gs-start-interval').value = s.start_match_interval ?? 3;
+      if ($('gs-new-delay')) $('gs-new-delay').value = s.new_match_delay ?? 3;
+      if ($('gs-idle-br')) $('gs-idle-br').value = s.match_idle_timeout ?? 15;
+      if ($('gs-idle-lw')) $('gs-idle-lw').value = s.lw_match_idle_timeout ?? 8;
+      if ($('gs-exp-refresh')) $('gs-exp-refresh').value = s.exp_refresh_interval ?? 25;
+      if ($('gs-token-ttl')) $('gs-token-ttl').value = s.token_cache_ttl ?? 1200;
+      if ($('gs-rotate-matches')) $('gs-rotate-matches').value = s.identity_rotate_every_matches ?? 5;
+      if ($('gs-rotate-seconds')) $('gs-rotate-seconds').value = s.identity_rotate_every_seconds ?? 900;
+      if ($('gs-safe-play')) $('gs-safe-play').checked = s.safe_play_mode !== false;
+      if ($('gs-human-move')) $('gs-human-move').checked = s.human_like_movement !== false;
+      if ($('gs-cancel-br')) $('gs-cancel-br').checked = !!s.cancel_br_on_lw_unlock;
+    } catch (e) { console.error(e); }
+  }
+  $('global-settings-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      max_stack_lw: Number($('gs-max-lw').value),
+      max_stack_br: Number($('gs-max-br').value),
+      start_match_interval: Number($('gs-start-interval').value),
+      new_match_delay: Number($('gs-new-delay').value),
+      match_idle_timeout: Number($('gs-idle-br').value),
+      lw_match_idle_timeout: Number($('gs-idle-lw').value),
+      exp_refresh_interval: Number($('gs-exp-refresh').value),
+      token_cache_ttl: Number($('gs-token-ttl').value),
+      identity_rotate_every_matches: Number($('gs-rotate-matches').value),
+      identity_rotate_every_seconds: Number($('gs-rotate-seconds').value),
+      safe_play_mode: !!$('gs-safe-play').checked,
+      human_like_movement: !!$('gs-human-move').checked,
+      cancel_br_on_lw_unlock: !!$('gs-cancel-br').checked,
+    };
+    try {
+      const data = await post('/api/settings', payload);
+      if (data.status === 'ok') {
+        const b = e.target.querySelector('button[type="submit"]');
+        if (b) {
+          const prev = b.innerHTML;
+          b.innerHTML = '<i class="fa-solid fa-check"></i> Saved';
+          setTimeout(() => { b.innerHTML = prev; }, 1500);
+        }
+      } else alert(data.error || 'Error');
+    } catch (err) { alert(err); }
+  });
+
+  /* Clear sticky button press/hover artifacts (esp. mobile) */
+  function clearBtnPress() {
+    document.querySelectorAll('.mbtn.is-pressed, .mbtn.spin').forEach(b => {
+      b.classList.remove('is-pressed');
+    });
+  }
+  document.addEventListener('pointerup', clearBtnPress);
+  document.addEventListener('pointercancel', clearBtnPress);
+  document.addEventListener('pointerdown', (e) => {
+    const b = e.target.closest?.('.mbtn');
+    if (b) b.classList.add('is-pressed');
+  }, true);
+
+  fetchStats();
+  let _statsTimer = setInterval(fetchStats, 2000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      clearInterval(_statsTimer);
+      _statsTimer = null;
+    } else {
+      fetchStats();
+      if (!_statsTimer) _statsTimer = setInterval(fetchStats, 2000);
+    }
+  });
+})();
+</script>
+</body>
+</html>
